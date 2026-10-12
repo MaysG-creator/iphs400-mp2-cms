@@ -11,10 +11,17 @@
           border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
     nav form { margin-left: auto; }
     label { display: block; margin-top: 1rem; }
-    input { width: 100%; max-width: 24rem; padding: .5rem; font: inherit; }
+    input, textarea { width: 100%; max-width: 24rem; padding: .5rem; font: inherit; }
+    textarea { max-width: none; min-height: 12rem; }
     button { margin-top: 1rem; padding: .5rem 1rem; font: inherit; }
     nav button { margin-top: 0; }
     .error { border: 1px solid #b00020; color: #b00020; padding: .5rem; }
+    .success { border: 1px solid #1b5e20; color: #1b5e20; padding: .5rem; }
+    .preview { border: 1px dashed #999; padding: 0 1rem; }
+    .preview img { max-width: 100%; }
+    .preview pre { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: .25rem .5rem .25rem 0; vertical-align: top; }
     main { overflow-wrap: anywhere; }
   </style>
 </head>
@@ -22,14 +29,19 @@
   {% if user %}
   <nav>
     <strong>CMS admin</strong>
-    <a href="admin">Home</a>
+    <a href="/admin">Home</a>
+    <a href="/admin/updates">Updates</a>
+    <a href="/admin/updates/new">New update</a>
     <span>{{ user.name }} ({{ user.email }}, {{ user.role }})</span>
-    <form method="post" action="logout">
+    <form method="post" action="/logout">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button type="submit">Log out</button>
     </form>
   </nav>
   {% endif %}
-  <main>{% block content %}{% endblock %}</main>
+  <main>
+    {% if flash %}<p class="{{ flash.kind }}" role="status">{{ flash.text }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

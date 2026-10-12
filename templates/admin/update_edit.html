@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  {% if update %}
+  <p>
+    Status: {{ update.status | capitalize }} ·
+    Slug: <code>{{ update.slug }}</code> ·
+    Author: {{ update.author }}<br>
+    Created <time datetime="{{ update.created_at }}">{{ update.created_at[:16] | replace("T", " ") }}</time> ·
+    Updated <time datetime="{{ update.updated_at }}">{{ update.updated_at[:16] | replace("T", " ") }}</time> (UTC)
+  </p>
+  {% else %}
+  <p>New updates are saved as drafts and stay in the admin console.</p>
+  {% endif %}
+  <form method="post" action="{{ action }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="title">Title</label>
+    <input id="title" name="title" value="{{ form_title }}" required>
+    <label for="body">Body (Markdown)</label>
+    <textarea id="body" name="body">{{ body }}</textarea>
+    <button type="submit" name="action" value="save">Save draft</button>
+    <button type="submit" name="action" value="preview" formnovalidate>Preview</button>
+  </form>
+  <h2>Preview</h2>
+  <div class="preview">{{ preview | safe }}</div>
+{% endblock %}

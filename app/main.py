@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import auth, settings
-from app.routes import admin, login
+from app.routes import admin, login, updates
 from app.templating import templates
 
 
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
 
     app.include_router(login.router)
     app.include_router(admin.router)
+    app.include_router(updates.router)
 
     @app.get("/")
     def public_home(request: Request):
