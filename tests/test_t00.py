@@ -5,8 +5,9 @@ door.
 """
 
 
-def test_admin_console_answers(client):
-    response = client.get("/admin")
+def test_admin_console_answers(client_as):
+    # T01 put the console behind login, so the front door is checked signed in.
+    response = client_as("admin").get("/admin")
     assert response.status_code == 200
     assert "hello admin" in response.text.lower()
 

@@ -14,8 +14,13 @@ Do not fork: a fork arrives without an Issues tab, and your tickets live in Issu
 ```bash
 uv sync
 cp .env.example .env
-uv run cms serve        # then open http://localhost:8000/admin  -> "T00: hello admin"
+uv run --env-file .env python scripts/seed_demo.py   # demo admin + editor
+uv run --env-file .env cms serve    # then open http://localhost:8000/admin
 ```
+
+Log in as `admin@example.test` or `editor@example.test` with the passwords from
+`CMS_ADMIN_PASSWORD` / `CMS_EDITOR_PASSWORD` in your `.env`. Quote any `.env`
+value that contains spaces, or `--env-file` will not read the file.
 
 ## What is here
 

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · CMS admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font: 16px/1.5 system-ui, sans-serif; margin: 0 auto; max-width: 48rem; padding: 1rem; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
+          border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
+    nav form { margin-left: auto; }
+    label { display: block; margin-top: 1rem; }
+    input { width: 100%; max-width: 24rem; padding: .5rem; font: inherit; }
+    button { margin-top: 1rem; padding: .5rem 1rem; font: inherit; }
+    nav button { margin-top: 0; }
+    .error { border: 1px solid #b00020; color: #b00020; padding: .5rem; }
+    main { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  {% if user %}
+  <nav>
+    <strong>CMS admin</strong>
+    <a href="admin">Home</a>
+    <span>{{ user.name }} ({{ user.email }}, {{ user.role }})</span>
+    <form method="post" action="logout">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Log out</button>
+    </form>
+  </nav>
+  {% endif %}
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>
