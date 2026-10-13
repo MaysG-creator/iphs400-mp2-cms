@@ -146,8 +146,8 @@ def admin_routes() -> list[tuple[str, str]]:
 
 
 # Actions only the admin may take on any content, however it is written.
-ADMIN_ONLY = {("POST", "/admin/updates/{update_id}/publish"),
-              ("POST", "/admin/updates/{update_id}/unpublish")}
+ADMIN_ONLY = {("POST", f"/admin/{kind}/{{item_id}}/{verb}")
+              for kind in ("updates", "pages") for verb in ("publish", "unpublish")}
 
 
 @pytest.mark.parametrize("method,path", admin_routes())
@@ -155,8 +155,14 @@ def test_an_editor_is_refused_exactly_the_admin_only_routes(client_as, method, p
     """On the editor's own draft, everything works except the admin-only actions,
     so a new admin-only route that forgets its check fails here."""
     editor = client_as("editor")
-    update_id = create(editor, "Own draft (sample)").rsplit("/", 1)[1]
-    response = editor.request(method, path.replace("{update_id}", update_id),
+    url = path
+    if "{item_id}" in path:
+        kind = path.split("/")[2]  # "updates" or "pages"
+        response = editor.post(f"/admin/{kind}", follow_redirects=False,
+                               data={"title": "Own draft (sample)",
+                                     "csrf_token": csrf_token(editor, f"/admin/{kind}/new")})
+        url = path.replace("{item_id}", response.headers["location"].rsplit("/", 1)[1])
+    response = editor.request(method, url,
                               data={"csrf_token": csrf_token(editor, NEW),
                                     "title": "Own draft (sample)"},
                               follow_redirects=False)
@@ -173,6 +179,6 @@ def test_admin_only_routes_exist():
 
 @pytest.mark.parametrize("method,path", admin_routes())
 def test_every_admin_route_sends_an_anonymous_visitor_to_login(client, method, path):
-    response = client.request(method, path.replace("{update_id}", "1"), follow_redirects=False)
+    response = client.request(method, path.replace("{item_id}", "1"), follow_redirects=False)
     assert response.status_code == 303
     assert response.headers["location"].endswith("/login")

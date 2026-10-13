@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  <p><a href="{{ url_for('new_' ~ kind.noun).path }}">Write a new {{ kind.noun }}</a></p>
+  {% if items %}
+  <table>
+    <thead><tr><th>Title</th><th>Status</th>{% if kind.has_nav_order %}<th>Nav order</th>{% endif %}<th>Author</th><th>Updated</th></tr></thead>
+    <tbody>
+    {% for item in items %}
+      <tr>
+        <td><a href="{{ url_for('show_' ~ kind.noun, item_id=item.id).path }}">{{ item.title }}</a></td>
+        <td>{{ item.status | capitalize }}</td>
+        {% if kind.has_nav_order %}<td>{{ item.nav_order }}</td>{% endif %}
+        <td>{{ item.author }}</td>
+        <td><time datetime="{{ item.updated_at }}">{{ item.updated_at[:10] }}</time></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No {{ kind.plural }} yet.</p>
+  {% endif %}
+{% endblock %}

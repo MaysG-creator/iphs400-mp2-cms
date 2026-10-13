@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  {% set is_admin = user.role == "admin" %}
+  {% if item %}
+  <p>
+    Status: {{ item.status | capitalize }} ·
+    Slug: <code>{{ item.slug }}</code> ·
+    {% if kind.has_nav_order %}Nav order: {{ item.nav_order }} ·{% endif %}
+    Author: {{ item.author }}<br>
+    Created <time datetime="{{ item.created_at }}">{{ item.created_at[:16] | replace("T", " ") }}</time> ·
+    Updated <time datetime="{{ item.updated_at }}">{{ item.updated_at[:16] | replace("T", " ") }}</time> (UTC)
+  </p>
+  {% if is_admin %}
+  {% set verb = "unpublish" if item.status == "published" else "publish" %}
+  <form method="post" action="{{ url_for(verb ~ '_' ~ kind.noun, item_id=item.id).path }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit">{{ verb | capitalize }}</button>
+  </form>
+  {% endif %}
+  {% if may_delete %}
+  <p><a href="{{ url_for('confirm_delete_' ~ kind.noun, item_id=item.id).path }}">Delete this {{ kind.noun }}</a></p>
+  {% endif %}
+  {% else %}
+  <p>New {{ kind.plural }} are saved as drafts and stay in the admin console.</p>
+  {% endif %}
+  {% if not refused_reason %}
+  <form method="post" action="{{ action }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="title">Title</label>
+    <input id="title" name="title" value="{{ form_title }}" required>
+    {% if is_admin and item %}
+    <label for="slug">Slug (letters, numbers, and dashes; only the admin can change it)</label>
+    <input id="slug" name="slug" value="{{ slug }}">
+    {% endif %}
+    {% if is_admin and kind.has_nav_order %}
+    <label for="nav_order">Nav order (lower comes first in the public menu)</label>
+    <input id="nav_order" name="nav_order" value="{{ nav_order }}" inputmode="numeric">
+    {% endif %}
+    <label for="body">Body (Markdown)</label>
+    <textarea id="body" name="body">{{ body }}</textarea>
+    <button type="submit" name="action" value="save">Save draft</button>
+    <button type="submit" name="action" value="preview" formnovalidate>Preview</button>
+  </form>
+  {% else %}
+  <p class="error" role="alert">{{ refused_reason }}</p>
+  <p>Title: {{ form_title }}</p>
+  {% endif %}
+  <h2>Preview</h2>
+  <div class="preview">{{ preview | safe }}</div>
+{% endblock %}

@@ -32,6 +32,8 @@
     <a href="{{ url_for('admin_home').path }}">Home</a>
     <a href="{{ url_for('list_updates').path }}">Updates</a>
     <a href="{{ url_for('new_update').path }}">New update</a>
+    <a href="{{ url_for('list_pages').path }}">Pages</a>
+    <a href="{{ url_for('new_page').path }}">New page</a>
     <span>{{ user.name }} ({{ user.email }}, {{ user.role }})</span>
     <form method="post" action="/logout">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

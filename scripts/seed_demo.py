@@ -4,10 +4,10 @@
     uv run --env-file .env python scripts/seed_demo.py
 
 It creates one admin and one editor (passwords read from the environment, never
-hard-coded), and, if there are no updates yet, a few sample updates: one
-published and two drafts. Every sample says it is a sample and holds no score,
-so nothing invented can pass for a real result. Running it twice is harmless:
-existing users and updates are kept.
+hard-coded), and, if there are none yet, a few sample updates (one published and
+two drafts) and sample pages (four published, one draft). Every sample says it
+is a sample and holds no score, so nothing invented can pass for a real result.
+Running it twice is harmless: existing users, updates, and pages are kept.
 
 The rubric expects this to run clean on a fresh clone with .env.example values
 (item E4), because the database itself is never committed.
@@ -20,7 +20,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app import db, settings, updates  # noqa: E402
+from app import db, settings  # noqa: E402
+from app.content import PAGES, UPDATES  # noqa: E402
 from app.users import DEMO_ADMIN, DEMO_EDITOR, seed_demo_users  # noqa: E402
 
 
@@ -40,17 +41,54 @@ SAMPLE_UPDATES = [
 ]
 
 
+# (title, body, author email, published?, nav order). Schedule and Results come
+# before History and About (CONTEXT.md, Nav order).
+SAMPLE_PAGES = [
+    ("Schedule (sample)",
+     "**Sample page.** Fixtures will be listed here once the admin publishes them.",
+     DEMO_ADMIN["email"], True, 10),
+    ("Roster (sample)",
+     "**Sample draft.** The roster stays in the admin console until it is checked.",
+     DEMO_EDITOR["email"], False, 20),
+    ("Results (sample)",
+     "**Sample page.** Verified results will appear here. There are none yet.",
+     DEMO_ADMIN["email"], True, 30),
+    ("History (sample)",
+     "**Sample page.** The program's past titles and accomplishments go here.",
+     DEMO_ADMIN["email"], True, 40),
+    ("About (sample)",
+     "**Sample page.** Who runs this site and how to reach the student media team.",
+     DEMO_ADMIN["email"], True, 50),
+]
+
+
+def _user_ids() -> dict[str, int]:
+    with db.connect() as conn:
+        return {row["email"]: row["id"] for row in conn.execute("SELECT id, email FROM users")}
+
+
 def seed_sample_updates() -> int:
     """Add the sample updates if the database has none. Return how many were added."""
-    if updates.list_updates():
+    if UPDATES.list_all():
         return 0
-    with db.connect() as conn:
-        ids = {row["email"]: row["id"] for row in conn.execute("SELECT id, email FROM users")}
+    ids = _user_ids()
     for title, body, email, published in SAMPLE_UPDATES:
-        update_id = updates.create_update(title, body, ids[email])
+        update_id = UPDATES.create(title, body, ids[email])
         if published:
-            updates.publish(update_id)
+            UPDATES.publish(update_id)
     return len(SAMPLE_UPDATES)
+
+
+def seed_sample_pages() -> int:
+    """Add the sample pages if the database has none. Return how many were added."""
+    if PAGES.list_all():
+        return 0
+    ids = _user_ids()
+    for title, body, email, published, nav_order in SAMPLE_PAGES:
+        page_id = PAGES.create(title, body, ids[email], nav_order=nav_order)
+        if published:
+            PAGES.publish(page_id)
+    return len(SAMPLE_PAGES)
 
 
 def main() -> int:
@@ -66,6 +104,7 @@ def main() -> int:
         state = "created" if person["email"] in created else "already exists"
         print(f"{person['email']}: {state}")
     print(f"Sample updates added: {seed_sample_updates()}")
+    print(f"Sample pages added: {seed_sample_pages()}")
     print(f"Database: {settings.DATABASE_PATH}")
     return 0
 

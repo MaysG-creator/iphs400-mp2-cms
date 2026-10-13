@@ -2,7 +2,9 @@
 {% block content %}
   <h1>Not allowed</h1>
   <p class="error" role="alert">{{ reason }}</p>
-  <p>Editors write updates, edit any draft, and delete their own drafts.
-     Only the admin publishes, unpublishes, and changes or deletes published content.</p>
-  {% if user %}<p><a href="{{ url_for('list_updates').path }}">Back to updates</a></p>{% endif %}
+  <p>Editors write updates and pages, edit any draft, and delete their own drafts.
+     Only the admin publishes, unpublishes, changes or deletes published content,
+     and sets slugs and nav order.</p>
+  {% if user %}<p><a href="{{ url_for('list_updates').path }}">Back to updates</a> ·
+     <a href="{{ url_for('list_pages').path }}">Back to pages</a></p>{% endif %}
 {% endblock %}

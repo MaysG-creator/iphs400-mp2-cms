@@ -6,8 +6,11 @@ Two rules the rubric checks:
   2. Every href and src is RELATIVE ("style.css", "updates/x.html"), never
      root-absolute ("/style.css"), because Pages serves this from a subfolder.
 
-The folder is rebuilt from scratch on every run, so an update that was
-unpublished since the last run disappears from the site.
+The folder is rebuilt from scratch on every run, so an update or page that
+was unpublished since the last run disappears from the site.
+
+Pages sit at the site root ("schedule.html") and updates under "updates/".
+Every file carries the navigation: the published pages, in nav order.
 """
 from __future__ import annotations
 
@@ -18,7 +21,8 @@ from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from app import markdown, settings, updates
+from app import markdown, settings
+from app.content import PAGES, UPDATES
 
 # Purple and white, with a CSS-only banner. No images, and nothing wider than
 # the screen, so a 390 px phone never scrolls sideways.
@@ -40,6 +44,9 @@ a { color: var(--purple); }
 .updates li { border-left: .3rem solid var(--purple); background: var(--lilac);
               margin-bottom: .75rem; padding: .6rem .9rem; }
 .updates a { display: block; font-weight: 700; }
+.site-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem 1rem;
+            background: var(--lilac); padding: .6rem 1rem; }
+.site-nav a { font-weight: 700; text-decoration: none; }
 .meta, small { color: #5a5266; }
 img, video { max-width: 100%; height: auto; }
 pre { overflow-x: auto; }
@@ -63,13 +70,24 @@ def update_path(update) -> str:
     return f"updates/{update['slug']}.html"
 
 
-def environment() -> Environment:
+def page_path(page) -> str:
+    """Where a page lives, relative to the site root. Slugs never clash with
+    each other or with index.html (app/content.py)."""
+    return f"{page['slug']}.html"
+
+
+def environment(pages: list | None = None) -> Environment:
+    """Templates for the public site. `pages` are the published pages, which
+    become the navigation; by default they are read from the database."""
     env = Environment(
         loader=FileSystemLoader(str(settings.TEMPLATES)),
         autoescape=select_autoescape(["html"]),
     )
     env.filters["local_date"] = local_date
     env.globals["site_title"] = settings.SITE_TITLE
+    if pages is None:
+        pages = PAGES.list_published()
+    env.globals["nav"] = [{"title": p["title"], "href": page_path(p)} for p in pages]
     return env
 
 
@@ -78,15 +96,21 @@ def render_site(out: Path | None = None) -> Path:
     if out.exists():
         shutil.rmtree(out)
     (out / "updates").mkdir(parents=True)
-    env = environment()
-    published = updates.list_published()
+    pages = PAGES.list_published()
+    env = environment(pages)
+    published = UPDATES.list_published()
 
     (out / "style.css").write_text(CSS)
-    page = env.get_template("public/update.html")
+    template = env.get_template("public/update.html")
     for update in published:
-        (out / update_path(update)).write_text(page.render(
+        (out / update_path(update)).write_text(template.render(
             root="../", title=update["title"], update=update,
             body=markdown.render(update["body"]),
+        ))
+    template = env.get_template("public/page.html")
+    for page in pages:
+        (out / page_path(page)).write_text(template.render(
+            root="", title=page["title"], page=page, body=markdown.render(page["body"]),
         ))
     (out / "index.html").write_text(render_home(published, env))
     return out
@@ -95,7 +119,7 @@ def render_site(out: Path | None = None) -> Path:
 def render_home(published: list | None = None, env: Environment | None = None) -> str:
     """The home page: published updates, newest first, each with its date."""
     if published is None:
-        published = updates.list_published()
+        published = UPDATES.list_published()
     items = [{"title": u["title"], "href": update_path(u), "updated_at": u["updated_at"]}
              for u in published]
     return (env or environment()).get_template("public/home.html").render(

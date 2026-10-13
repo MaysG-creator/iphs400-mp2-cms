@@ -31,7 +31,7 @@ In a second terminal, from the repo folder:
 uv run --env-file .env cms publish
 ```
 
-This rebuilds `site/` from scratch with only the published updates. Anything
+This rebuilds `site/` from scratch with only the published updates and pages. Anything
 unpublished since the last run is removed. Never edit `site/` by hand: the next
 run overwrites it.
 
