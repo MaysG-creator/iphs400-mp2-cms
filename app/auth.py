@@ -18,6 +18,14 @@ class LoginRequired(Exception):
     """Raised for an anonymous visitor; main.py turns it into a redirect."""
 
 
+class Refused(HTTPException):
+    """A signed-in user tried something their role does not allow. main.py
+    shows the "not allowed" screen with this reason, as a 403."""
+
+    def __init__(self, reason: str):
+        super().__init__(status_code=403, detail=reason)
+
+
 def csrf_token(request: Request) -> str:
     """Return this session's CSRF token, creating one if needed."""
     token = request.session.get("csrf_token")
@@ -37,10 +45,15 @@ async def check_csrf(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Invalid or missing CSRF token")
 
 
+def signed_in_user(request: Request) -> sqlite3.Row | None:
+    """The signed-in, still-active user, or None."""
+    user_id = request.session.get("user_id")
+    return users.get_active_user(user_id) if user_id else None
+
+
 def current_user(request: Request) -> sqlite3.Row:
     """Dependency for every admin screen: the signed-in, still-active user."""
-    user_id = request.session.get("user_id")
-    user = users.get_active_user(user_id) if user_id else None
+    user = signed_in_user(request)
     if user is None:
         request.session.pop("user_id", None)
         raise LoginRequired
@@ -50,7 +63,7 @@ def current_user(request: Request) -> sqlite3.Row:
 def admin_user(user: sqlite3.Row = Depends(current_user)) -> sqlite3.Row:
     """Dependency for admin-only actions: an editor is refused with 403."""
     if user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Only the admin can do this")
+        raise Refused("Only the admin can do this.")
     return user
 
 

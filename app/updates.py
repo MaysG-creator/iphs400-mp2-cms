@@ -19,7 +19,7 @@ class InvalidUpdate(ValueError):
 
 _SELECT = (
     "SELECT posts.id, title, slug, body, status, posts.created_at, updated_at, "
-    "users.name AS author FROM posts JOIN users ON users.id = posts.author_id"
+    "posts.author_id, users.name AS author FROM posts JOIN users ON users.id = posts.author_id"
 )
 
 
@@ -83,6 +83,12 @@ def unpublish(update_id: int) -> None:
     """Back to draft. The next `cms publish` removes it from the site."""
     with db.connect() as conn:
         conn.execute("UPDATE posts SET status = 'draft' WHERE id = ?", (update_id,))
+
+
+def delete_update(update_id: int) -> None:
+    """Gone for good. If it was published, the next `cms publish` removes it."""
+    with db.connect() as conn:
+        conn.execute("DELETE FROM posts WHERE id = ?", (update_id,))
 
 
 def get_update(update_id: int) -> sqlite3.Row | None:

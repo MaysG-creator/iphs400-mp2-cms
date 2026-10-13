@@ -13,6 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import auth, settings
 from app.publish import render_home
 from app.routes import admin, login, updates
+from app.templating import templates
 
 
 def create_app() -> FastAPI:
@@ -23,6 +24,15 @@ def create_app() -> FastAPI:
     @app.exception_handler(auth.LoginRequired)
     def send_to_login(request: Request, exc: auth.LoginRequired):
         return RedirectResponse("/login", status_code=303)
+
+    @app.exception_handler(auth.Refused)
+    def refused_screen(request: Request, exc: auth.Refused):
+        return templates.TemplateResponse(
+            request, "admin/refused.html",
+            {"title": "Not allowed", "reason": exc.detail,
+             "user": auth.signed_in_user(request)},
+            status_code=403,
+        )
 
     app.include_router(login.router)
     app.include_router(admin.router)

@@ -1,5 +1,6 @@
-"""Write, edit, publish, and unpublish updates. Every route here requires a
-signed-in user; publish and unpublish require the admin.
+"""Write, edit, publish, unpublish, and delete updates. Every route here
+requires a signed-in user; publish and unpublish require the admin, and editing
+or deleting is checked against app/permissions.py.
 
 The editor form has two buttons: Save stores the update, Preview re-renders the
 form with the sanitized Markdown and stores nothing. Publishing only marks the
@@ -13,7 +14,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app import auth, markdown, updates
+from app import auth, markdown, permissions, updates
 from app.templating import flash, templates
 
 router = APIRouter(prefix="/admin/updates")
@@ -22,11 +23,14 @@ router = APIRouter(prefix="/admin/updates")
 def editor_page(request: Request, user, *, update=None, title: str = "", body: str = "",
                 error: str = "", status: int = 200):
     action = f"/admin/updates/{update['id']}" if update else "/admin/updates"
+    may_edit = update is None or permissions.may_edit(user, update)
     return templates.TemplateResponse(
         request, "admin/update_edit.html",
         {"title": "Edit update" if update else "New update", "user": user,
          "update": update, "action": action, "form_title": title, "body": body,
-         "preview": markdown.render(body), "error": error},
+         "preview": markdown.render(body), "error": error,
+         "may_delete": update is not None and permissions.may_delete(user, update),
+         "refused_reason": "" if may_edit else permissions.PUBLISHED_IS_ADMIN_ONLY},
         status_code=status,
     )
 
@@ -75,6 +79,7 @@ def show_update(request: Request, update_id: int, user=auth.SIGNED_IN):
 def save_update(request: Request, update_id: int, user=auth.SIGNED_IN, _csrf=auth.CSRF,
                 title: str = Form(""), body: str = Form(""), action: str = Form("save")):
     update = get_or_404(update_id)
+    permissions.check_edit(user, update)
     if action == "preview":
         return editor_page(request, user, update=update, title=title, body=body)
     try:
@@ -103,3 +108,26 @@ def publish_update(request: Request, update_id: int, user=auth.ADMIN, _csrf=auth
 def unpublish_update(request: Request, update_id: int, user=auth.ADMIN, _csrf=auth.CSRF):
     return change_status(request, update_id, updates.unpublish,
                          "Unpublished. Run cms publish and cms deploy to take it down.")
+
+
+@router.get("/{update_id}/delete")
+def confirm_delete(request: Request, update_id: int, user=auth.SIGNED_IN):
+    update = get_or_404(update_id)
+    permissions.check_delete(user, update)
+    return templates.TemplateResponse(
+        request, "admin/update_delete.html",
+        {"title": "Delete update", "user": user, "update": update},
+    )
+
+
+@router.post("/{update_id}/delete")
+def delete_update(request: Request, update_id: int, user=auth.SIGNED_IN, _csrf=auth.CSRF):
+    update = get_or_404(update_id)
+    permissions.check_delete(user, update)
+    updates.delete_update(update_id)
+    if update["status"] == "published":
+        flash(request, "success", f"Deleted “{update['title']}”. "
+                                  "Run cms publish and cms deploy to take it down.")
+    else:
+        flash(request, "success", f"Deleted the draft “{update['title']}”.")
+    return RedirectResponse("/admin/updates", status_code=303)
