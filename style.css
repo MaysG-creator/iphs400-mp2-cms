@@ -1,0 +1,23 @@
+*, *::before, *::after { box-sizing: border-box; }
+:root { --purple: #4b2e83; --purple-dark: #2e1a57; --lilac: #f3eefb; }
+body { font: 17px/1.6 system-ui, sans-serif; margin: 0; color: #1d1a24; background: #fff; }
+.banner {
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple) 60%, #6a4bb0);
+  border-bottom: .4rem solid #fff; box-shadow: 0 .4rem 0 var(--purple);
+  padding: 1.5rem 1rem; text-align: center;
+}
+.banner a { color: #fff; font-size: 1.6rem; font-weight: 800; letter-spacing: .02em;
+            text-decoration: none; text-transform: uppercase; }
+main, footer { margin: 0 auto; max-width: 42rem; padding: 0 1rem; }
+main { margin-block: 2rem; overflow-wrap: anywhere; }
+h1, h2, h3 { color: var(--purple-dark); line-height: 1.25; }
+a { color: var(--purple); }
+.updates { list-style: none; padding: 0; }
+.updates li { border-left: .3rem solid var(--purple); background: var(--lilac);
+              margin-bottom: .75rem; padding: .6rem .9rem; }
+.updates a { display: block; font-weight: 700; }
+.meta, small { color: #5a5266; }
+img, video { max-width: 100%; height: auto; }
+pre { overflow-x: auto; }
+table { display: block; overflow-x: auto; }
+footer { border-top: 2px solid var(--lilac); padding-block: 1rem; }
