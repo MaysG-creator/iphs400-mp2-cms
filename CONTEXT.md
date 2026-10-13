@@ -54,3 +54,5 @@ admin in one step. It's the only way the admin role changes hands.
 - The public site is purple and white with a CSS-only banner. The admin console is not themed.
 - Sample content is clearly marked as sample, never invented scores or stats.
 - A deactivated user keeps their authorship and content.
+- The dashboard counts drafts (updates and pages together), published updates, and published
+  pages. A draft page counts only as a draft.

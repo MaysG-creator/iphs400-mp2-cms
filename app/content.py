@@ -183,7 +183,8 @@ def list_content(status: str | None = None, noun: str | None = None) -> list[dic
 
 
 def dashboard_counts() -> dict[str, int]:
-    """Drafts of either kind, published updates, and all pages."""
+    """Drafts of either kind, published updates, and published pages. A draft
+    counts once, as a draft, whatever its kind."""
     return {"drafts": sum(store.count("draft") for store in STORES.values()),
             "published_updates": UPDATES.count("published"),
-            "pages": PAGES.count()}
+            "published_pages": PAGES.count("published")}

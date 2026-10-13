@@ -54,7 +54,7 @@ def test_dashboard_counts_match_the_data(mixed):
     text = visible(admin.get("/admin").text)
     assert "Drafts 3" in text
     assert "Published updates 1" in text
-    assert "Pages 2" in text
+    assert "Published pages 1" in text
 
 
 def test_dashboard_counts_follow_a_status_change(mixed):
@@ -66,16 +66,26 @@ def test_dashboard_counts_follow_a_status_change(mixed):
     assert "Published updates 1" in text and "Drafts 4" in text
 
 
+def test_a_draft_page_counts_as_a_draft_not_a_page(client_as):
+    admin = client_as("admin")
+    url = create_page(admin, "Roster (sample)")
+    text = visible(admin.get("/admin").text)
+    assert "Drafts 1" in text and "Published pages 0" in text
+    post_status_form(admin, url, "publish")
+    text = visible(admin.get("/admin").text)
+    assert "Drafts 0" in text and "Published pages 1" in text
+
+
 def test_empty_dashboard_shows_zero_counts(client_as):
     text = visible(client_as("admin").get("/admin").text)
-    assert "Drafts 0" in text and "Published updates 0" in text and "Pages 0" in text
+    assert "Drafts 0" in text and "Published updates 0" in text and "Published pages 0" in text
 
 
 def test_dashboard_counts_link_to_the_matching_list(client_as):
     page = client_as("admin").get("/admin").text
     assert f'href="{CONTENT}?status=draft"' in page
     assert f'href="{CONTENT}?status=published&amp;type=update"' in page
-    assert f'href="{CONTENT}?type=page"' in page
+    assert f'href="{CONTENT}?status=published&amp;type=page"' in page
 
 
 # --- content list ----------------------------------------------------------

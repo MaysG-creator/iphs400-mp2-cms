@@ -6,7 +6,7 @@
   <dl class="counts">
     <div><dt><a href="{{ content_url }}?status=draft">Drafts</a></dt><dd>{{ counts.drafts }}</dd></div>
     <div><dt><a href="{{ content_url }}?status=published&amp;type=update">Published updates</a></dt><dd>{{ counts.published_updates }}</dd></div>
-    <div><dt><a href="{{ content_url }}?type=page">Pages</a></dt><dd>{{ counts.pages }}</dd></div>
+    <div><dt><a href="{{ content_url }}?status=published&amp;type=page">Published pages</a></dt><dd>{{ counts.published_pages }}</dd></div>
   </dl>
   <p><a href="{{ content_url }}">See all content</a></p>
 {% endblock %}
