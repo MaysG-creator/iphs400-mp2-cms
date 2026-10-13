@@ -23,6 +23,19 @@
     table { border-collapse: collapse; width: 100%; }
     th, td { text-align: left; padding: .25rem .5rem .25rem 0; vertical-align: top; }
     main { overflow-wrap: anywhere; }
+    .counts { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0; }
+    .counts div { border: 1px solid #ccc; padding: .5rem 1rem; min-width: 9rem; }
+    .counts dd { margin: 0; font-size: 2rem; }
+    .filters { display: flex; flex-wrap: wrap; gap: 0 1rem; align-items: end; margin-bottom: 1rem; }
+    .filters label { margin-top: .5rem; }
+    select { display: block; padding: .5rem; font: inherit; }
+    /* Under 30rem a content row becomes a small card, so nothing scrolls sideways. */
+    @media (max-width: 30rem) {
+      table.stack thead { display: none; }
+      table.stack tr { display: block; border-top: 1px solid #ccc; padding: .5rem 0; }
+      table.stack td { display: block; padding: 0; }
+      table.stack td[data-label]::before { content: attr(data-label) ": "; color: #555; }
+    }
   </style>
 </head>
 <body>
@@ -30,6 +43,7 @@
   <nav>
     <strong>CMS admin</strong>
     <a href="{{ url_for('admin_home').path }}">Home</a>
+    <a href="{{ url_for('content_list').path }}">Content</a>
     <a href="{{ url_for('list_updates').path }}">Updates</a>
     <a href="{{ url_for('new_update').path }}">New update</a>
     <a href="{{ url_for('list_pages').path }}">Pages</a>

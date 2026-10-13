@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h1>Content</h1>
+  <form method="get" action="{{ url_for('content_list').path }}" class="filters">
+    <label for="status">Status
+      <select id="status" name="status">
+        <option value="">Any</option>
+        {% for s in statuses %}<option value="{{ s }}"{% if s == status %} selected{% endif %}>{{ s | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label for="type">Type
+      <select id="type" name="type">
+        <option value="">Any</option>
+        {% for option in stores %}<option value="{{ option }}"{% if option == noun %} selected{% endif %}>{{ option | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Filter</button>
+  </form>
+  {% if items %}
+  <table class="stack">
+    <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Author</th><th>Last updated</th></tr></thead>
+    <tbody>
+    {% for item in items %}
+      <tr>
+        <td><a href="{{ url_for('show_' ~ item.kind.noun, item_id=item.id).path }}">{{ item.title }}</a></td>
+        <td data-label="Type">{{ item.kind.noun | capitalize }}</td>
+        <td data-label="Status">{{ item.status | capitalize }}</td>
+        <td data-label="Author">{{ item.author }}</td>
+        <td data-label="Last updated"><time datetime="{{ item.updated_at }}">{{ item.updated_at[:10] }}</time></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% elif status or noun %}
+  <p role="status">No {{ status ~ " " if status }}{{ stores[noun].plural if noun else "items" }} match these filters.
+     <a href="{{ url_for('content_list').path }}">Show everything</a></p>
+  {% else %}
+  <p>Nothing has been written yet.</p>
+  {% endif %}
+{% endblock %}

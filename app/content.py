@@ -141,10 +141,19 @@ class Store:
             return conn.execute(f"{self._select} WHERE {self.table}.id = ?",
                                 (item_id,)).fetchone()
 
-    def list_all(self) -> list[sqlite3.Row]:
+    def list_all(self, status: str | None = None) -> list[sqlite3.Row]:
+        """Every item, or only those with `status`, most recently updated first."""
+        where, args = ("WHERE status = ?", (status,)) if status else ("", ())
         with db.connect() as conn:
-            return conn.execute(f"{self._select} "
-                                f"ORDER BY updated_at DESC, {self.table}.id DESC").fetchall()
+            return conn.execute(f"{self._select} {where} "
+                                f"ORDER BY updated_at DESC, {self.table}.id DESC",
+                                args).fetchall()
+
+    def count(self, status: str | None = None) -> int:
+        where, args = ("WHERE status = ?", (status,)) if status else ("", ())
+        with db.connect() as conn:
+            return conn.execute(f"SELECT COUNT(*) FROM {self.table} {where}",
+                                args).fetchone()[0]
 
     def list_published(self) -> list[sqlite3.Row]:
         """What `cms publish` exports, in the order the public site shows it."""
@@ -159,3 +168,22 @@ UPDATES = Store("posts", "update", "updates",
                 published_order="posts.created_at DESC, posts.id DESC")
 PAGES = Store("pages", "page", "pages", has_nav_order=True,
               published_order="pages.nav_order, pages.title, pages.id")
+
+STORES = {store.noun: store for store in (UPDATES, PAGES)}
+STATUSES = ("draft", "published")
+
+
+def list_content(status: str | None = None, noun: str | None = None) -> list[dict]:
+    """Updates and pages together, most recently updated first, for the content
+    list. `status` and `noun` ("update" or "page") filter and combine; None means any.
+    Each row's `kind` is its Store, as on the editor screens."""
+    items = [{**row, "kind": store} for store in STORES.values() if noun in (None, store.noun)
+             for row in store.list_all(status)]
+    return sorted(items, key=lambda item: item["updated_at"], reverse=True)
+
+
+def dashboard_counts() -> dict[str, int]:
+    """Drafts of either kind, published updates, and all pages."""
+    return {"drafts": sum(store.count("draft") for store in STORES.values()),
+            "published_updates": UPDATES.count("published"),
+            "pages": PAGES.count()}
