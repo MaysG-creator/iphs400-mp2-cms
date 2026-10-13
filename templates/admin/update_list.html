@@ -1,14 +1,14 @@
 {% extends "admin/base.html" %}
 {% block content %}
   <h1>Updates</h1>
-  <p><a href="/admin/updates/new">Write a new update</a></p>
+  <p><a href="{{ url_for('new_update').path }}">Write a new update</a></p>
   {% if updates %}
   <table>
     <thead><tr><th>Title</th><th>Status</th><th>Author</th><th>Updated</th></tr></thead>
     <tbody>
     {% for update in updates %}
       <tr>
-        <td><a href="/admin/updates/{{ update.id }}">{{ update.title }}</a></td>
+        <td><a href="{{ url_for('show_update', update_id=update.id).path }}">{{ update.title }}</a></td>
         <td>{{ update.status | capitalize }}</td>
         <td>{{ update.author }}</td>
         <td><time datetime="{{ update.updated_at }}">{{ update.updated_at[:10] }}</time></td>
