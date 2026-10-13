@@ -1,7 +1,9 @@
-"""T02: write and edit update drafts. Every route here requires a signed-in user.
+"""Write, edit, publish, and unpublish updates. Every route here requires a
+signed-in user; publish and unpublish require the admin.
 
 The editor form has two buttons: Save stores the update, Preview re-renders the
-form with the sanitized Markdown and stores nothing.
+form with the sanitized Markdown and stores nothing. Publishing only marks the
+update; it reaches the public site at the next `cms publish` and `cms deploy`.
 
 CSRF is a parameter after `user` (not `dependencies=[...]`, which FastAPI runs
 first) so an anonymous POST is sent to login rather than refused with 403.
@@ -82,3 +84,22 @@ def save_update(request: Request, update_id: int, user=auth.SIGNED_IN, _csrf=aut
                            error=str(exc), status=400)
     flash(request, "success", "Changes saved.")
     return RedirectResponse(f"/admin/updates/{update_id}", status_code=303)
+
+
+def change_status(request: Request, update_id: int, change, message: str):
+    get_or_404(update_id)
+    change(update_id)
+    flash(request, "success", message)
+    return RedirectResponse(f"/admin/updates/{update_id}", status_code=303)
+
+
+@router.post("/{update_id}/publish")
+def publish_update(request: Request, update_id: int, user=auth.ADMIN, _csrf=auth.CSRF):
+    return change_status(request, update_id, updates.publish,
+                         "Published. Run cms publish and cms deploy to put it live.")
+
+
+@router.post("/{update_id}/unpublish")
+def unpublish_update(request: Request, update_id: int, user=auth.ADMIN, _csrf=auth.CSRF):
+    return change_status(request, update_id, updates.unpublish,
+                         "Unpublished. Run cms publish and cms deploy to take it down.")

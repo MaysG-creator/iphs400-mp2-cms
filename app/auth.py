@@ -47,6 +47,13 @@ def current_user(request: Request) -> sqlite3.Row:
     return user
 
 
+def admin_user(user: sqlite3.Row = Depends(current_user)) -> sqlite3.Row:
+    """Dependency for admin-only actions: an editor is refused with 403."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only the admin can do this")
+    return user
+
+
 def start_session(request: Request, user: sqlite3.Row) -> None:
     """Begin a fresh session for the user, with a new CSRF token."""
     request.session.clear()
@@ -60,3 +67,4 @@ def end_session(request: Request) -> None:
 
 CSRF = Depends(check_csrf)
 SIGNED_IN = Depends(current_user)
+ADMIN = Depends(admin_user)

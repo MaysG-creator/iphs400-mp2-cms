@@ -18,6 +18,8 @@ uv run --env-file .env python scripts/seed_demo.py   # demo admin + editor
 uv run --env-file .env cms serve    # then open http://localhost:8000/admin
 ```
 
+To put published updates live, follow `docs/runbooks/publish-and-deploy.md`.
+
 Log in as `admin@example.test` or `editor@example.test` with the passwords from
 `CMS_ADMIN_PASSWORD` / `CMS_EDITOR_PASSWORD` in your `.env`. Quote any `.env`
 value that contains spaces, or `--env-file` will not read the file.

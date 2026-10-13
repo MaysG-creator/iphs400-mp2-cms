@@ -27,6 +27,8 @@ DEMO_USERS = {
 }
 
 CSRF_FIELD = re.compile(r'name="csrf_token" value="([^"]+)"')
+TAG = re.compile(r"<[^>]+>")
+NEW = "/admin/updates/new"
 
 
 def csrf_token(client: TestClient, path: str = "/login") -> str:
@@ -40,6 +42,23 @@ def login(client: TestClient, email: str, password: str):
     return client.post("/login", data={"email": email, "password": password,
                                        "csrf_token": csrf_token(client)},
                        follow_redirects=False)
+
+
+def visible(html: str) -> str:
+    """The page's text as a reader sees it, whitespace collapsed."""
+    return " ".join(TAG.sub(" ", html).split())
+
+
+def save_new(client: TestClient, title: str, body: str = "", **extra):
+    data = {"title": title, "body": body, "csrf_token": csrf_token(client, NEW), **extra}
+    return client.post("/admin/updates", data=data, follow_redirects=False)
+
+
+def create(client: TestClient, title: str, body: str = "") -> str:
+    """Save a new update and return its edit URL."""
+    response = save_new(client, title, body)
+    assert response.status_code == 303, response.text
+    return response.headers["location"]
 
 
 @pytest.fixture(autouse=True)

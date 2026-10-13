@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · {{ site_title }}{% endblock %}
+{% block content %}
+  <article>
+    <h1>{{ title }}</h1>
+    <p class="meta">Last updated <time datetime="{{ update.updated_at }}">{{ update.updated_at | local_date }}</time></p>
+    {{ body | safe }}
+  </article>
+  <p><a href="{{ root }}index.html">All updates</a></p>
+{% endblock %}

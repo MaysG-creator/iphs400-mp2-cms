@@ -1,8 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>{{ title }}</h1>
+  <h1>Latest updates</h1>
   {% if items %}
-    <ul>{% for item in items %}<li><a href="{{ item.href }}">{{ item.title }}</a></li>{% endfor %}</ul>
+    <ul class="updates">
+    {% for item in items %}
+      <li>
+        <a href="{{ item.href }}">{{ item.title }}</a>
+        <small>Last updated <time datetime="{{ item.updated_at }}">{{ item.updated_at | local_date }}</time></small>
+      </li>
+    {% endfor %}
+    </ul>
   {% else %}
     <p>Nothing published yet.</p>
   {% endif %}

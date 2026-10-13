@@ -49,6 +49,8 @@ admin in one step. It's the only way the admin role changes hands.
 - Stretch (after the 7 core capabilities): photo uploads with alt text, categories and tags.
 - The admin console runs on one machine; remote access for editors comes later.
 - Updates are expected about an hour after a game, not live.
+- The home page orders updates by when they were first written, newest first. Editing or
+  correcting an update changes its *last updated* date but never moves it above a newer update.
 - The public site is purple and white with a CSS-only banner. The admin console is not themed.
 - Sample content is clearly marked as sample, never invented scores or stats.
 - A deactivated user keeps their authorship and content.

@@ -7,31 +7,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from conftest import DEMO_USERS, csrf_token, login
-
-NEW = "/admin/updates/new"
-TAG = re.compile(r"<[^>]+>")
-
-
-def visible(html: str) -> str:
-    """The page's text as a reader sees it, whitespace collapsed."""
-    return " ".join(TAG.sub(" ", html).split())
-
+from conftest import DEMO_USERS, NEW, create, csrf_token, login, save_new, visible
 
 def slug_on(html: str) -> str:
     return re.search(r"Slug: (\S+)", visible(html)).group(1)
-
-
-def save_new(client: TestClient, title: str, body: str = "", **extra):
-    data = {"title": title, "body": body, "csrf_token": csrf_token(client, NEW), **extra}
-    return client.post("/admin/updates", data=data, follow_redirects=False)
-
-
-def create(client: TestClient, title: str, body: str = "") -> str:
-    """Save a new update and return its edit URL."""
-    response = save_new(client, title, body)
-    assert response.status_code == 303, response.text
-    return response.headers["location"]
 
 
 def save_edit(client: TestClient, url: str, title: str, body: str = "", **extra):

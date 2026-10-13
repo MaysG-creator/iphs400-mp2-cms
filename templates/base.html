@@ -4,10 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ title }}{% endblock %}</title>
-  <link rel="stylesheet" href="{{ css_path | default('style.css') }}">
+  {#- `root` is the relative path back to the site root: "" or "../". -#}
+  {% set root = root | default("") %}
+  <link rel="stylesheet" href="{{ root }}style.css">
 </head>
 <body>
-  <header><a href="{{ home_path | default('index.html') }}">{{ title }}</a></header>
+  <header class="banner">
+    <a href="{{ root }}index.html">{{ site_title | default(title) }}</a>
+  </header>
   <main>{% block content %}{% endblock %}</main>
   <footer><small>IPHS 400 Mini-Project #2</small></footer>
 </body>

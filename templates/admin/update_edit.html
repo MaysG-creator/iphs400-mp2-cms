@@ -10,6 +10,13 @@
     Created <time datetime="{{ update.created_at }}">{{ update.created_at[:16] | replace("T", " ") }}</time> ·
     Updated <time datetime="{{ update.updated_at }}">{{ update.updated_at[:16] | replace("T", " ") }}</time> (UTC)
   </p>
+  {% if user.role == "admin" %}
+  {% set verb = "unpublish" if update.status == "published" else "publish" %}
+  <form method="post" action="/admin/updates/{{ update.id }}/{{ verb }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit">{{ verb | capitalize }}</button>
+  </form>
+  {% endif %}
   {% else %}
   <p>New updates are saved as drafts and stay in the admin console.</p>
   {% endif %}

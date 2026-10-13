@@ -7,12 +7,12 @@ this file small.
 from __future__ import annotations
 
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import auth, settings
+from app.publish import render_home
 from app.routes import admin, login, updates
-from app.templating import templates
 
 
 def create_app() -> FastAPI:
@@ -28,12 +28,11 @@ def create_app() -> FastAPI:
     app.include_router(admin.router)
     app.include_router(updates.router)
 
-    @app.get("/")
-    def public_home(request: Request):
-        return templates.TemplateResponse(
-            request, "public/home.html",
-            {"title": settings.SITE_TITLE, "items": []},
-        )
+    @app.get("/", response_class=HTMLResponse)
+    def public_home():
+        # A quick look at the home page. The full site, with its stylesheet
+        # and update pages, is what `cms publish` writes to site/.
+        return render_home()
 
     return app
 

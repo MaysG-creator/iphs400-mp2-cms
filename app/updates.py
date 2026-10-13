@@ -72,9 +72,32 @@ def edit_update(update_id: int, title: str, body: str) -> None:
         )
 
 
+def publish(update_id: int) -> None:
+    """Mark published. Going live counts as an update, so fans see a fresh date."""
+    with db.connect() as conn:
+        conn.execute("UPDATE posts SET status = 'published', updated_at = ? WHERE id = ?",
+                     (_now(), update_id))
+
+
+def unpublish(update_id: int) -> None:
+    """Back to draft. The next `cms publish` removes it from the site."""
+    with db.connect() as conn:
+        conn.execute("UPDATE posts SET status = 'draft' WHERE id = ?", (update_id,))
+
+
 def get_update(update_id: int) -> sqlite3.Row | None:
     with db.connect() as conn:
         return conn.execute(f"{_SELECT} WHERE posts.id = ?", (update_id,)).fetchone()
+
+
+def list_published() -> list[sqlite3.Row]:
+    """What `cms publish` exports: published updates, newest written first.
+
+    Ordered by created_at, not updated_at, so a correction never jumps above a
+    newer update (CONTEXT.md, Decisions)."""
+    with db.connect() as conn:
+        return conn.execute(f"{_SELECT} WHERE status = 'published' "
+                            "ORDER BY posts.created_at DESC, posts.id DESC").fetchall()
 
 
 def list_updates() -> list[sqlite3.Row]:
