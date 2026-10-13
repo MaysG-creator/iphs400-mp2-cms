@@ -13,7 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import auth, settings
 from app.publish import render_home
 from app.content import PAGES, UPDATES
-from app.routes import admin, login
+from app.routes import admin, login, users
 from app.routes.content import content_router
 from app.templating import templates
 
@@ -40,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(admin.router)
     app.include_router(content_router(UPDATES))
     app.include_router(content_router(PAGES))
+    app.include_router(users.router)
 
     @app.get("/", response_class=HTMLResponse)
     def public_home():

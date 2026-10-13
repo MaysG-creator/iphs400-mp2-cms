@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Exactly one admin (CONTEXT.md). The database refuses a second active admin;
+-- app/permissions.py stops the admin leaving the role except by hand-over.
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_admin
+    ON users (role) WHERE role = 'admin' AND active = 1;
+
 -- An Update is stored as a post (see CONTEXT.md).
 CREATE TABLE IF NOT EXISTS posts (
     id         INTEGER PRIMARY KEY,

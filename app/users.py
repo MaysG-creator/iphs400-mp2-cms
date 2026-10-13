@@ -21,6 +21,15 @@ DEMO_ADMIN = {"email": "admin@example.test", "name": "Sample Admin"}
 DEMO_EDITOR = {"email": "editor@example.test", "name": "Sample Editor"}
 
 
+ROLES = ("admin", "editor")
+MIN_PASSWORD_LENGTH = 8
+USE_HAND_OVER = "There is only ever one admin. Use hand-over to pass the admin role on."
+
+
+class InvalidUser(ValueError):
+    """The user form cannot be saved; the message is shown to the admin."""
+
+
 def create_user(email: str, name: str, password: str, role: str) -> int:
     with db.connect() as conn:
         cursor = conn.execute(
@@ -30,9 +39,60 @@ def create_user(email: str, name: str, password: str, role: str) -> int:
         return cursor.lastrowid
 
 
+def add_user(email: str, name: str, password: str, role: str) -> int:
+    """Check the admin's new-user form, then create the user. A new user is
+    never an admin: the only way to become one is hand-over."""
+    email, name = email.strip(), name.strip()
+    if "@" not in email:
+        raise InvalidUser("Enter an email address.")
+    if not name:
+        raise InvalidUser("Enter a name.")
+    if role not in ROLES:
+        raise InvalidUser("Choose a role.")
+    if role == "admin":
+        raise InvalidUser(USE_HAND_OVER)
+    if len(password) < MIN_PASSWORD_LENGTH:
+        raise InvalidUser(f"The starting password needs at least "
+                          f"{MIN_PASSWORD_LENGTH} characters.")
+    try:
+        return create_user(email, name, password, role)
+    except sqlite3.IntegrityError:
+        raise InvalidUser("A user with that email already exists.") from None
+
+
+def list_users() -> list[sqlite3.Row]:
+    with db.connect() as conn:
+        return conn.execute(
+            "SELECT id, email, name, role, active FROM users "
+            "ORDER BY role = 'admin' DESC, active DESC, name COLLATE NOCASE"
+        ).fetchall()
+
+
+def get_user(user_id: int) -> sqlite3.Row | None:
+    with db.connect() as conn:
+        return conn.execute(
+            "SELECT id, email, name, role, active FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+
+
+def set_role(user_id: int, role: str) -> None:
+    with db.connect() as conn:
+        conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+
+
 def set_active(user_id: int, active: bool) -> None:
     with db.connect() as conn:
         conn.execute("UPDATE users SET active = ? WHERE id = ?", (int(active), user_id))
+
+
+def hand_over(from_id: int, to_id: int) -> None:
+    """Demote the current admin and promote the target in one transaction, so
+    there is never a moment with two admins or none."""
+    with db.connect() as conn:
+        conn.execute("UPDATE users SET role = 'editor' WHERE id = ?", (from_id,))
+        conn.execute("UPDATE users SET role = 'admin' WHERE id = ? AND active = 1", (to_id,))
+        if conn.execute("SELECT changes()").fetchone()[0] != 1:
+            raise InvalidUser("Hand-over needs an active user to receive the admin role.")
 
 
 def get_active_user(user_id: int) -> sqlite3.Row | None:

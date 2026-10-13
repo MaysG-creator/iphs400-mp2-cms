@@ -148,6 +148,11 @@ def admin_routes() -> list[tuple[str, str]]:
 # Actions only the admin may take on any content, however it is written.
 ADMIN_ONLY = {("POST", f"/admin/{kind}/{{item_id}}/{verb}")
               for kind in ("updates", "pages") for verb in ("publish", "unpublish")}
+# User management and hand-over (T07) are the admin's alone.
+ADMIN_ONLY |= {("GET", "/admin/users"), ("GET", "/admin/users/new"), ("POST", "/admin/users"),
+               ("GET", "/admin/users/{user_id}/hand-over")}
+ADMIN_ONLY |= {("POST", f"/admin/users/{{user_id}}/{verb}")
+               for verb in ("role", "deactivate", "reactivate", "hand-over")}
 
 
 @pytest.mark.parametrize("method,path", admin_routes())
@@ -162,6 +167,7 @@ def test_an_editor_is_refused_exactly_the_admin_only_routes(client_as, method, p
                                data={"title": "Own draft (sample)",
                                      "csrf_token": csrf_token(editor, f"/admin/{kind}/new")})
         url = path.replace("{item_id}", response.headers["location"].rsplit("/", 1)[1])
+    url = url.replace("{user_id}", "1")
     response = editor.request(method, url,
                               data={"csrf_token": csrf_token(editor, NEW),
                                     "title": "Own draft (sample)"},
@@ -179,6 +185,7 @@ def test_admin_only_routes_exist():
 
 @pytest.mark.parametrize("method,path", admin_routes())
 def test_every_admin_route_sends_an_anonymous_visitor_to_login(client, method, path):
-    response = client.request(method, path.replace("{item_id}", "1"), follow_redirects=False)
+    path = path.replace("{item_id}", "1").replace("{user_id}", "1")
+    response = client.request(method, path, follow_redirects=False)
     assert response.status_code == 303
     assert response.headers["location"].endswith("/login")

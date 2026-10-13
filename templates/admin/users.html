@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block content %}
+  <h1>Users</h1>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  <p><a href="{{ url_for('new_user').path }}">Add a user</a></p>
+  <table class="stack">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for person in users %}
+      <tr>
+        <td>{{ person.name }}</td>
+        <td data-label="Email">{{ person.email }}</td>
+        <td data-label="Role">{{ person.role | capitalize }}</td>
+        <td data-label="Status">{{ "Active" if person.active else "Inactive" }}</td>
+        <td class="actions">
+        {% if person.id == user.id %}
+          You
+        {% else %}
+          <form method="post" action="{{ url_for('change_role', user_id=person.id).path }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label for="role-{{ person.id }}">Role
+              <select id="role-{{ person.id }}" name="role">
+                {% for r in roles %}<option value="{{ r }}"{% if r == person.role %} selected{% endif %}>{{ r | capitalize }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <button type="submit">Change role</button>
+          </form>
+          {% set toggle = 'deactivate_user' if person.active else 'reactivate_user' %}
+          <form method="post" action="{{ url_for(toggle, user_id=person.id).path }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">{{ "Deactivate" if person.active else "Reactivate" }}</button>
+          </form>
+          {% if person.active %}
+          <a href="{{ url_for('confirm_hand_over', user_id=person.id).path }}">Hand over admin</a>
+          {% endif %}
+        {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p>There is always exactly one admin. To pass the role on, use “Hand over admin”:
+     that user becomes the admin and you become an editor.</p>
+{% endblock %}

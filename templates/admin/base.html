@@ -29,6 +29,10 @@
     .filters { display: flex; flex-wrap: wrap; gap: 0 1rem; align-items: end; margin-bottom: 1rem; }
     .filters label { margin-top: .5rem; }
     select { display: block; padding: .5rem; font: inherit; }
+    td.actions form { display: inline-block; margin: 0 .5rem .5rem 0; }
+    td.actions label { display: inline-block; margin-top: 0; }
+    td.actions select { display: inline-block; }
+    td.actions button { margin-top: 0; }
     /* Under 30rem a content row becomes a small card, so nothing scrolls sideways. */
     @media (max-width: 30rem) {
       table.stack thead { display: none; }
@@ -48,6 +52,7 @@
     <a href="{{ url_for('new_update').path }}">New update</a>
     <a href="{{ url_for('list_pages').path }}">Pages</a>
     <a href="{{ url_for('new_page').path }}">New page</a>
+    {% if user.role == "admin" %}<a href="{{ url_for('list_users').path }}">Users</a>{% endif %}
     <span>{{ user.name }} ({{ user.email }}, {{ user.role }})</span>
     <form method="post" action="/logout">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
