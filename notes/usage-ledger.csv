@@ -85,3 +85,16 @@ ts,session,phase,provider,model,effort,ctx_pct,five_h_pct,weekly_pct
 2026-10-13T15:08:35Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,8.0,33,12
 2026-10-13T15:12:12Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,37,13
 2026-10-13T15:17:28Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,37,13
+2026-10-13T15:17:43Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,37,13
+2026-10-13T15:18:22Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,37,13
+2026-10-13T15:18:54Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,37,13
+2026-10-13T15:19:51Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,38,13
+2026-10-13T15:23:58Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,38,13
+2026-10-14T21:29:56Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,,
+2026-10-14T21:30:16Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,10.0,5,1
+2026-10-14T21:32:31Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,11.0,7,1
+2026-10-14T21:33:39Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,12.0,7,1
+2026-10-14T21:40:21Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,13.0,9,1
+2026-10-14T21:40:51Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,13.0,9,1
+2026-10-14T21:43:48Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,14.0,10,1
+2026-10-14T21:44:34Z,c06f4fa3,T07,anthropic,Opus 5.5,medium,14.0,10,1
