@@ -16,6 +16,9 @@ a { color: var(--purple); }
 .updates li { border-left: .3rem solid var(--purple); background: var(--lilac);
               margin-bottom: .75rem; padding: .6rem .9rem; }
 .updates a { display: block; font-weight: 700; }
+.site-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem 1rem;
+            background: var(--lilac); padding: .6rem 1rem; }
+.site-nav a { font-weight: 700; text-decoration: none; }
 .meta, small { color: #5a5266; }
 img, video { max-width: 100%; height: auto; }
 pre { overflow-x: auto; }
